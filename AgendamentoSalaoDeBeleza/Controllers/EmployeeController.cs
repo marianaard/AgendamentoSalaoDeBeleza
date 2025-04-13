@@ -1,7 +1,6 @@
 ﻿using Core.Entities;
-using Infrastructure.Data;
+using Domain.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace AgendamentoSalaoDeBeleza.Controllers
 {
@@ -9,11 +8,11 @@ namespace AgendamentoSalaoDeBeleza.Controllers
     [Route("api/[controller]")]
     public class EmployeeController : ControllerBase
     {
-        private readonly SalonContext _context;
+        private readonly EmployeeService _employeeService;
 
-        public EmployeeController(SalonContext context)
+        public EmployeeController(EmployeeService employeeService)
         {
-            _context = context;
+            _employeeService = employeeService;
         }
 
         [HttpPost]
@@ -24,17 +23,14 @@ namespace AgendamentoSalaoDeBeleza.Controllers
                 return BadRequest("Employee is null.");
             }
 
-            employee.Id = Guid.NewGuid();
-            _context.Employees.Add(employee);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetEmployeeById), new { id = employee.Id }, employee);
+            var createdEmployee = await _employeeService.CreateEmployeeAsync(employee);
+            return CreatedAtAction(nameof(GetEmployeeById), new { id = createdEmployee.Id }, createdEmployee);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetEmployeeById(Guid id)
         {
-            var employee = await _context.Employees.FindAsync(id);
+            var employee = await _employeeService.GetEmployeeByIdAsync(id);
 
             if (employee == null)
             {
@@ -47,7 +43,7 @@ namespace AgendamentoSalaoDeBeleza.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllEmployees()
         {
-            var employees = await _context.Employees.ToListAsync();
+            var employees = await _employeeService.GetAllEmployeesAsync();
             return Ok(employees);
         }
 
@@ -59,34 +55,29 @@ namespace AgendamentoSalaoDeBeleza.Controllers
                 return BadRequest("Employee is null or ID mismatch.");
             }
 
-            var existingEmployee = await _context.Employees.FindAsync(id);
-            if (existingEmployee == null)
+            try
             {
-                return NotFound();
+                await _employeeService.UpdateEmployeeAsync(id, employee);
+                return NoContent();
             }
-
-            existingEmployee.Name = employee.Name;
-            existingEmployee.Email = employee.Email;
-
-            _context.Employees.Update(existingEmployee);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteEmployee(Guid id)
         {
-            var employee = await _context.Employees.FindAsync(id);
-            if (employee == null)
+            try
             {
-                return NotFound();
+                await _employeeService.DeleteEmployeeAsync(id);
+                return NoContent();
             }
-
-            _context.Employees.Remove(employee);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

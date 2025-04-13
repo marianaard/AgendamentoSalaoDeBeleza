@@ -1,8 +1,7 @@
 ﻿using Application.ViewModels;
 using Core.Entities;
-using Infrastructure.Data;
+using Domain.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers
 {
@@ -10,11 +9,11 @@ namespace API.Controllers
     [Route("api/[controller]")]
     public class AppointmentsController : ControllerBase
     {
-        private readonly SalonContext _context;
+        private readonly AppointmentService _appointmentService;
 
-        public AppointmentsController(SalonContext context)
+        public AppointmentsController(AppointmentService appointmentService)
         {
-            _context = context;
+            _appointmentService = appointmentService;
         }
 
         [HttpPost]
@@ -27,28 +26,23 @@ namespace API.Controllers
                 return BadRequest("Appointment is null.");
             }
 
-            var userExists = await _context.Users.AnyAsync(u => u.Id == appointmentViewModel.UserId);
-            var employeeExists = await _context.Employees.AnyAsync(e => e.Id == appointmentViewModel.EmployeeId);
-            var serviceExists = await _context.Services.AnyAsync(s => s.Id == appointmentViewModel.ServiceId);
-
-            if (!userExists || !employeeExists || !serviceExists)
-            {
-                return BadRequest("Invalid UserId, EmployeeId, or ServiceId.");
-            }
-
             var appointment = new Appointment
             {
-                Id = Guid.NewGuid(),
                 UserId = appointmentViewModel.UserId,
                 EmployeeId = appointmentViewModel.EmployeeId,
                 ServiceId = appointmentViewModel.ServiceId,
                 AppointmentDate = appointmentViewModel.AppointmentDate
             };
 
-            _context.Appointments.Add(appointment);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetAppointmentById), new { id = appointment.Id }, appointment);
+            try
+            {
+                var createdAppointment = await _appointmentService.CreateAppointmentAsync(appointment);
+                return CreatedAtAction(nameof(GetAppointmentById), new { id = createdAppointment.Id }, createdAppointment);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet("{id}")]
@@ -56,30 +50,34 @@ namespace API.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> GetAppointmentById(Guid id)
         {
-            var appointment = await _context.Appointments
-                .Include(a => a.User)
-                .Include(a => a.Employee)
-                .Include(a => a.Service)
-                .FirstOrDefaultAsync(a => a.Id == id);
-
-            if (appointment == null)
+            try
             {
-                return NotFound();
+                var appointment = await _appointmentService.GetAppointmentByIdAsync(id);
+                if (appointment == null)
+                {
+                    return NotFound();
+                }
+                return Ok(appointment);
             }
-
-            return Ok(appointment);
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<Appointment>), 200)]
         public async Task<IActionResult> GetAllAppointments()
         {
-            var appointments = await _context.Appointments
-                .Include(a => a.User)
-                .Include(a => a.Employee)
-                .Include(a => a.Service)
-                .ToListAsync();
-            return Ok(appointments);
+            try
+            {
+                var appointments = await _appointmentService.GetAllAppointmentsAsync();
+                return Ok(appointments);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPut("{id}")]
@@ -93,21 +91,15 @@ namespace API.Controllers
                 return BadRequest("Appointment is null.");
             }
 
-            var existingAppointment = await _context.Appointments.FindAsync(id);
-            if (existingAppointment == null)
+            try
             {
-                return NotFound();
+                await _appointmentService.UpdateAppointmentAsync(id, appointmentViewModel);
+                return NoContent();
             }
-
-            existingAppointment.UserId = appointmentViewModel.UserId;
-            existingAppointment.EmployeeId = appointmentViewModel.EmployeeId;
-            existingAppointment.ServiceId = appointmentViewModel.ServiceId;
-            existingAppointment.AppointmentDate = appointmentViewModel.AppointmentDate;
-
-            _context.Appointments.Update(existingAppointment);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpDelete("{id}")]
@@ -115,16 +107,15 @@ namespace API.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> DeleteAppointment(Guid id)
         {
-            var appointment = await _context.Appointments.FindAsync(id);
-            if (appointment == null)
+            try
             {
-                return NotFound();
+                await _appointmentService.DeleteAppointmentAsync(id);
+                return NoContent();
             }
-
-            _context.Appointments.Remove(appointment);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

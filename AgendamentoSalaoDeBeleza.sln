@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35707.178 d17.12
+VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgendamentoSalaoDeBeleza", "AgendamentoSalaoDeBeleza\AgendamentoSalaoDeBeleza.csproj", "{5D6D19ED-2429-4DD4-8307-0D9F2EE1A47D}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", "{259AC046-21C6-466B-9EE5-487729302DFD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application", "Application\Application.csproj", "{9FF13E24-95D9-4B9D-B7EF-7F33D319262B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "Domain\Domain.csproj", "{832881AD-50D4-490C-9799-86D9C481BF0D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{9FF13E24-95D9-4B9D-B7EF-7F33D319262B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9FF13E24-95D9-4B9D-B7EF-7F33D319262B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9FF13E24-95D9-4B9D-B7EF-7F33D319262B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{832881AD-50D4-490C-9799-86D9C481BF0D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{832881AD-50D4-490C-9799-86D9C481BF0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{832881AD-50D4-490C-9799-86D9C481BF0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{832881AD-50D4-490C-9799-86D9C481BF0D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

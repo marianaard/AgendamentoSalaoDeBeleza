@@ -1,7 +1,6 @@
 ﻿using Core.Entities;
-using Infrastructure.Data;
+using Domain.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace AgendamentoSalaoDeBeleza.Controllers
 {
@@ -9,11 +8,11 @@ namespace AgendamentoSalaoDeBeleza.Controllers
     [Route("api/[controller]")]
     public class ServiceController : ControllerBase
     {
-        private readonly SalonContext _context;
+        private readonly ServicesService _serviceService;
 
-        public ServiceController(SalonContext context)
+        public ServiceController(ServicesService serviceService)
         {
-            _context = context;
+            _serviceService = serviceService;
         }
 
         [HttpPost]
@@ -24,17 +23,14 @@ namespace AgendamentoSalaoDeBeleza.Controllers
                 return BadRequest("Service is null.");
             }
 
-            service.Id = Guid.NewGuid();
-            _context.Services.Add(service);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetServiceById), new { id = service.Id }, service);
+            var createdService = await _serviceService.CreateServiceAsync(service);
+            return CreatedAtAction(nameof(GetServiceById), new { id = createdService.Id }, createdService);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetServiceById(Guid id)
         {
-            var service = await _context.Services.FindAsync(id);
+            var service = await _serviceService.GetServiceByIdAsync(id);
 
             if (service == null)
             {
@@ -47,7 +43,7 @@ namespace AgendamentoSalaoDeBeleza.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllServices()
         {
-            var services = await _context.Services.ToListAsync();
+            var services = await _serviceService.GetAllServicesAsync();
             return Ok(services);
         }
 
@@ -59,33 +55,29 @@ namespace AgendamentoSalaoDeBeleza.Controllers
                 return BadRequest("Service is null or ID mismatch.");
             }
 
-            var existingService = await _context.Services.FindAsync(id);
-            if (existingService == null)
+            try
             {
-                return NotFound();
+                await _serviceService.UpdateServiceAsync(id, service);
+                return NoContent();
             }
-
-            existingService.Name = service.Name;
-
-            _context.Services.Update(existingService);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteService(Guid id)
         {
-            var service = await _context.Services.FindAsync(id);
-            if (service == null)
+            try
             {
-                return NotFound();
+                await _serviceService.DeleteServiceAsync(id);
+                return NoContent();
             }
-
-            _context.Services.Remove(service);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }
