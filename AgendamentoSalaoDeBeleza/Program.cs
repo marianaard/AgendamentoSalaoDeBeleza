@@ -1,5 +1,6 @@
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,18 +11,19 @@ builder.Services.AddDbContext<SalonContext>(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    c.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "AgendamentoSalaoDeBeleza API",
         Version = "v1",
         Description = "API para agendamento de salão de beleza",
-        Contact = new Microsoft.OpenApi.Models.OpenApiContact
+        Contact = new OpenApiContact
         {
             Name = "Mariana Rodrigues",
             Email = "mariana12v@gmail.com",
         }
     });
 });
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
