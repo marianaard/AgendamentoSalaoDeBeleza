@@ -56,6 +56,5 @@ O projeto segue uma arquitetura limpa, com separação de responsabilidades em d
 2. **Configure o banco de dados**:
    - Atualize a string de conexão no arquivo `appsettings.json` com as credenciais do seu banco de dados MySQL.
 
-3. **Execute as migrações**:
 
    
